@@ -1,0 +1,54 @@
+Axis Labels plugin for flot :P
+by Xuan Luo
+
+Example:
+
+$(function () {
+    var options = {
+        xaxis: {
+            axisLabel: 'foo',
+            axisLabelUseCanvas: true,
+            axisLabelFontSizePixels: 20,
+            axisLabelFontFamily: 'Arial'
+        },
+        yaxis: {
+            axisLabel: 'bar',
+            axisLabelUseCanvas: true
+        }
+    };
+
+    $.plot($("#placeholder"),
+           yourData,
+           options);
+    );
+});
+
+Usage:
+
+For each of your axes (only xaxis and yaxis are supported right now),
+there are four options:
+
+* axisLabel:
+    a string that is the text you want displayed as the label
+
+* axisLabelUseCanvas:
+    a boolean; if true, draws text into the canvas; if false, uses HTML text.
+    The two modes have pros and cons:
+    * True - canvas text (default):
+        y-axis text will be vertical. Canvas text is not be supported in older
+        browsers.
+    * False - HTML text:
+        Can be styled with CSS. Text is always horizontal (even for y axis)
+
+The following two options can only be used if axisLabelUseCanvas is enabled:
+
+* axisLabelFontSizePixels:
+    the size, in pixels (NOT POINTS), of the font (default: 14)
+
+* axisLabelFontFamily:
+    the font family of the font (default: sans-serif)
+
+FUTURE DIRECTIONS
+
+* Add support for secondary axes (x2axis, y2axis, etc.)
+* Support a custom rotation angle for the labels

@@ -31,9 +31,18 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
                         return;
 
                     var w, h;
+                    if (opts.axisLabelUseCanvas != false)
+                        opts.axisLabelUseCanvas = true;
                     if (opts.axisLabelUseCanvas) {
-                        w = 14;
-                        h = 14;
+                        if (!opts.axisLabelFontSizePixels)
+                            opts.axisLabelFontSizePixels = 14;
+                        if (!opts.axisLabelFontFamily)
+                            opts.axisLabelFontFamily = 'sans-serif';
+                        // since we currently always display x as horiz.
+                        // and y as vertical, we only care about the height
+                        w = opts.axisLabelFontSizePixels;
+                        h = opts.axisLabelFontSizePixels;
+
                     } else {
                         var elem = $('<div class="axisLabels" style="position:absolute;">' + opts.axisLabel + '</div>');
                         plot.getPlaceholder().append(elem);
@@ -64,22 +73,25 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
                     if (opts.axisLabelUseCanvas) {
                         var ctx = plot.getCanvas().getContext('2d');
                         ctx.save();
-                        ctx.font = '11pt "Trebuchet MS", Arial, Helvetica, sans-serif';
+                        ctx.font = opts.axisLabelFontSizePixels + 'px ' +
+                                opts.axisLabelFontFamily;
                         var width = ctx.measureText(opts.axisLabel).width;
+                        var height = opts.axisLabelFontSizePixels;
                         var x, y;
                         if (axisName.charAt(0) == 'x') {
                             x = plot.getPlotOffset().left + plot.width()/2 - width/2;
                             y = plot.getCanvas().height;
                         } else {
                             x = -(plot.getPlotOffset().top + plot.height()/2 - width/2);
-                            y = 10;
+                            y = height * 0.72;
                         }
                         ctx.rotate((axisName.charAt(0) == 'x') ? 0 : -Math.PI/2);
                         ctx.fillText(opts.axisLabel, x, y);
                         ctx.restore();
+
                     } else {
                         plot.getPlaceholder().find('#' + axisName + 'Label').remove();
-                        var elem = $('<div id="' + axisName + 'Label" " class="axisLabels" style="position:absolute;">' + opts.axisLabel.label + '</div>');
+                        var elem = $('<div id="' + axisName + 'Label" " class="axisLabels" style="position:absolute;">' + opts.axisLabel + '</div>');
                         if (axisName.charAt(0) == 'x') {
                             elem.css('left', plot.getPlotOffset().left + plot.width()/2 - elem.outerWidth()/2 + 'px');
                             elem.css('bottom', '0px');

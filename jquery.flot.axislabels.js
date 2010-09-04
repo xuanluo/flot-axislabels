@@ -20,6 +20,14 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
     var options = { };
 
     function init(plot) {
+        // This is kind of a hack. There are no hooks in Flot between
+        // the creation and measuring of the ticks (setTicks, measureTickLabels
+        // in setupGrid() ) and the drawing of the ticks and plot box
+        // (insertAxisLabels in setupGrid() ).
+        //
+        // Therefore, we use a trick where we run the draw routine twice:
+        // the first time to get the tick measurements, so that we can change
+        // them, and then have it draw it again.
         var secondPass = false;
         plot.hooks.draw.push(function (plot, ctx) {
             if (!secondPass) {
@@ -33,7 +41,9 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
                     var w, h;
                     if (opts.axisLabelUseCanvas != false)
                         opts.axisLabelUseCanvas = true;
+
                     if (opts.axisLabelUseCanvas) {
+                        // canvas text
                         if (!opts.axisLabelFontSizePixels)
                             opts.axisLabelFontSizePixels = 14;
                         if (!opts.axisLabelFontFamily)
@@ -44,6 +54,7 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
                         h = opts.axisLabelFontSizePixels;
 
                     } else {
+                        // HTML text
                         var elem = $('<div class="axisLabels" style="position:absolute;">' + opts.axisLabel + '</div>');
                         plot.getPlaceholder().append(elem);
                         w = elem.outerWidth(true);
@@ -58,6 +69,7 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
                     opts.labelHeight = axis.labelHeight;
                     opts.labelWidth = axis.labelWidth;
                 });
+                // re-draw with new label widths and heights
                 secondPass = true;
                 plot.setupGrid();
                 plot.draw();
@@ -70,7 +82,9 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
                         || plot.getOptions()[axisName]; // Flot 0.6
                     if (!opts || !opts.axisLabel)
                         return;
+
                     if (opts.axisLabelUseCanvas) {
+                        // canvas text
                         var ctx = plot.getCanvas().getContext('2d');
                         ctx.save();
                         ctx.font = opts.axisLabelFontSizePixels + 'px ' +
@@ -90,6 +104,7 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
                         ctx.restore();
 
                     } else {
+                        // HTML text
                         plot.getPlaceholder().find('#' + axisName + 'Label').remove();
                         var elem = $('<div id="' + axisName + 'Label" " class="axisLabels" style="position:absolute;">' + opts.axisLabel + '</div>');
                         if (axisName.charAt(0) == 'x') {

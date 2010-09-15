@@ -96,11 +96,12 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
                             x = plot.getPlotOffset().left + plot.width()/2 - width/2;
                             y = plot.getCanvas().height;
                         } else {
-                            x = -(plot.getPlotOffset().top + plot.height()/2 - width/2);
-                            y = height * 0.72;
+                            x = height * 0.72;
+                            y = plot.getPlotOffset().top + plot.height()/2 - width/2;
                         }
+                        ctx.translate(x, y);
                         ctx.rotate((axisName.charAt(0) == 'x') ? 0 : -Math.PI/2);
-                        ctx.fillText(opts.axisLabel, x, y);
+                        ctx.fillText(opts.axisLabel, 0, 0);
                         ctx.restore();
 
                     } else {

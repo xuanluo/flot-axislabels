@@ -45,7 +45,9 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
                     if (opts.axisLabelUseCanvas) {
                         // canvas text
                         if (!opts.axisLabelFontSizePixels)
-                            opts.axisLabelFontSizePixels = 14;
+                            opts.axisLabelFontSizePixels = 13;
+                        if (!opts.fillStyle)
+                            opts.fillStyle = 'black';
                         if (!opts.axisLabelFontFamily)
                             opts.axisLabelFontFamily = 'sans-serif';
                         // since we currently always display x as horiz.
@@ -97,8 +99,9 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
                             y = plot.getCanvas().height;
                         } else {
                             x = height * 0.72;
-                            y = plot.getPlotOffset().top + plot.height()/2 - width/2;
+                            y = plot.getPlotOffset().top + plot.height()/2 + width/2;
                         }
+                        ctx.fillStyle = opts.fillStyle;
                         ctx.translate(x, y);
                         ctx.rotate((axisName.charAt(0) == 'x') ? 0 : -Math.PI/2);
                         ctx.fillText(opts.axisLabel, 0, 0);

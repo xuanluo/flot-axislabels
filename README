@@ -25,8 +25,7 @@ $(function () {
 
 Usage:
 
-For each of your axes (only xaxis and yaxis are supported right now),
-there are four options:
+For each of your axes (xaxis, x2axis, yaxis, y2axis), there are four options:
 
 * axisLabel:
     a string that is the text you want displayed as the label
@@ -50,5 +49,4 @@ The following two options can only be used if axisLabelUseCanvas is enabled:
 
 FUTURE DIRECTIONS
 
-* Add support for secondary axes (x2axis, y2axis, etc.)
 * Support a custom rotation angle for the labels

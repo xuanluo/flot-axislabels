@@ -1,6 +1,7 @@
 /*
 Axis Labels Plugin for flot. :P
 Released under the GPLv3 license by Xuan Luo, September 2010.
+Improvements by Mark Cote, December 2010.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,7 +30,7 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
         // the first time to get the tick measurements, so that we can change
         // them, and then have it draw it again.
         var secondPass = false;
-        var padding = 2;  // padding between axis and tick labels
+        var defaultPadding = 2;  // padding between axis and tick labels
         plot.hooks.draw.push(function (plot, ctx) {
             if (!secondPass) {
                 // MEASURE AND SET OPTIONS
@@ -40,6 +41,7 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
                         return;
 
                     var w, h;
+                    var padding = opts.axisLabelPadding === undefined ? defaultPadding : opts.axisLabelPadding;
                     if (opts.axisLabelUseCanvas != false)
                         opts.axisLabelUseCanvas = true;
 

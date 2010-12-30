@@ -29,6 +29,7 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
         // the first time to get the tick measurements, so that we can change
         // them, and then have it draw it again.
         var secondPass = false;
+        var padding = 2;  // padding between axis and tick labels
         plot.hooks.draw.push(function (plot, ctx) {
             if (!secondPass) {
                 // MEASURE AND SET OPTIONS
@@ -50,8 +51,8 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
                             opts.axisLabelFontFamily = 'sans-serif';
                         // since we currently always display x as horiz.
                         // and y as vertical, we only care about the height
-                        w = opts.axisLabelFontSizePixels;
-                        h = opts.axisLabelFontSizePixels;
+                        w = opts.axisLabelFontSizePixels + padding;
+                        h = opts.axisLabelFontSizePixels + padding;
 
                     } else {
                         // HTML text
@@ -91,16 +92,24 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
                                 opts.axisLabelFontFamily;
                         var width = ctx.measureText(opts.axisLabel).width;
                         var height = opts.axisLabelFontSizePixels;
-                        var x, y;
-                        if (axisName.charAt(0) == 'x') {
+                        var x, y, angle = 0;
+                        if (axisName == 'xaxis') {
                             x = plot.getPlotOffset().left + plot.width()/2 - width/2;
                             y = plot.getCanvas().height;
-                        } else {
+                        } else if (axisName == 'x2axis') {
+                            x = plot.getPlotOffset().left + plot.width()/2 - width/2;
+                            y = height;
+                        } else if (axisName == 'yaxis') {
                             x = height * 0.72;
-                            y = plot.getPlotOffset().top + plot.height()/2 - width/2;
+                            y = plot.getPlotOffset().top + plot.height()/2 + width/2;
+                            angle = -Math.PI/2;
+                        } else if (axisName == 'y2axis') {
+                            x = plot.getPlotOffset().left + plot.width() + plot.getPlotOffset().right - 0.72*height;
+                            y = plot.getPlotOffset().top + (plot.height() - width)/2;
+                            angle = Math.PI/2;
                         }
                         ctx.translate(x, y);
-                        ctx.rotate((axisName.charAt(0) == 'x') ? 0 : -Math.PI/2);
+                        ctx.rotate(angle);
                         ctx.fillText(opts.axisLabel, 0, 0);
                         ctx.restore();
 
@@ -108,14 +117,20 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
                         // HTML text
                         plot.getPlaceholder().find('#' + axisName + 'Label').remove();
                         var elem = $('<div id="' + axisName + 'Label" " class="axisLabels" style="position:absolute;">' + opts.axisLabel + '</div>');
-                        if (axisName.charAt(0) == 'x') {
+                        plot.getPlaceholder().append(elem);
+                        if (axisName == 'xaxis') {
                             elem.css('left', plot.getPlotOffset().left + plot.width()/2 - elem.outerWidth()/2 + 'px');
                             elem.css('bottom', '0px');
-                        } else {
+                        } else if (axisName == 'x2axis') {
+                            elem.css('left', plot.getPlotOffset().left + plot.width()/2 - elem.outerWidth()/2 + 'px');
+                            elem.css('top', '0px');
+                        } else if (axisName == 'yaxis') {
                             elem.css('top', plot.getPlotOffset().top + plot.height()/2 - elem.outerHeight()/2 + 'px');
                             elem.css('left', '0px');
+                        } else if (axisName == 'y2axis') {
+                            elem.css('top', plot.getPlotOffset().top + plot.height()/2 - elem.outerHeight()/2 + 'px');
+                            elem.css('right', '0px');
                         }
-                        plot.getPlaceholder().append(elem);
                     }
                 });
                 secondPass = false;

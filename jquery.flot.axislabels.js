@@ -95,7 +95,7 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
                         var x, y, angle = 0;
                         if (axisName == 'xaxis') {
                             x = plot.getPlotOffset().left + plot.width()/2 - width/2;
-                            y = plot.getCanvas().height;
+                            y = plot.getCanvas().height - height * 0.28;
                         } else if (axisName == 'x2axis') {
                             x = plot.getPlotOffset().left + plot.width()/2 - width/2;
                             y = height;
@@ -104,7 +104,7 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
                             y = plot.getPlotOffset().top + plot.height()/2 + width/2;
                             angle = -Math.PI/2;
                         } else if (axisName == 'y2axis') {
-                            x = plot.getPlotOffset().left + plot.width() + plot.getPlotOffset().right - 0.72*height;
+                            x = plot.getPlotOffset().left + plot.width() + plot.getPlotOffset().right - height * 0.72;
                             y = plot.getPlotOffset().top + plot.height()/2 - width/2;
                             angle = Math.PI/2;
                         }

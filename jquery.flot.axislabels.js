@@ -105,7 +105,7 @@ Released under the GPLv3 license by Xuan Luo, September 2010.
                             angle = -Math.PI/2;
                         } else if (axisName == 'y2axis') {
                             x = plot.getPlotOffset().left + plot.width() + plot.getPlotOffset().right - 0.72*height;
-                            y = plot.getPlotOffset().top + (plot.height() - width)/2;
+                            y = plot.getPlotOffset().top + plot.height()/2 - width/2;
                             angle = Math.PI/2;
                         }
                         ctx.translate(x, y);

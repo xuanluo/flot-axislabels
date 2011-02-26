@@ -1,5 +1,6 @@
 /*
 Axis Labels Plugin for flot. :P
+http://github.com/markrcote/flot-axislabels
 Released under the GPLv3 license by Xuan Luo, September 2010.
 Improvements by Mark Cote, December 2010.
 
@@ -135,7 +136,6 @@ Improvements by Mark Cote, December 2010.
                         }
                     }
                 });
-                secondPass = false;
             }
         });
     }

@@ -1,5 +1,8 @@
-Axis Labels plugin for flot :P
-by Xuan Luo
+Axis Labels plugin for flot 
+http://github.com/markrcote/flot-axislabels
+
+Original author: Xuan Luo
+Contributions: Mark Cote
 
 Example:
 
@@ -46,6 +49,10 @@ The following two options can only be used if axisLabelUseCanvas is enabled:
 
 * axisLabelFontFamily:
     the font family of the font (default: sans-serif)
+
+* axisLabelPadding:
+    padding, in pixels, between edge of graph and label (default: 2)
+
 
 FUTURE DIRECTIONS
 

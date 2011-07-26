@@ -31,6 +31,14 @@ Improvements by Mark Cote, December 2010.
         // the first time to get the tick measurements, so that we can change
         // them, and then have it draw it again.
         var secondPass = false;
+        function transforms(clockwise) {
+            var degrees = (clockwise ? '90' : '-90');
+            var rotation = (clockwise ? '1' : '3');
+            return '-moz-transform: rotate(' + degrees + 'deg);'
+                   + '-webkit-transform: rotate(' + degrees + 'deg);'
+                   + '-o-transform: rotate(' + degrees + 'deg);'
+                   + 'filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=' + rotation + ');';
+        }
         var defaultPadding = 2;  // padding between axis and tick labels
         plot.hooks.draw.push(function (plot, ctx) {
             if (!secondPass) {
@@ -59,10 +67,15 @@ Improvements by Mark Cote, December 2010.
 
                     } else {
                         // HTML text
-                        var elem = $('<div class="axisLabels" style="position:absolute;">' + opts.axisLabel + '</div>');
+                        var elem = $('<div class="axisLabels" style="position:absolute;' + transforms(true) + '">' + opts.axisLabel + '</div>');
                         plot.getPlaceholder().append(elem);
-                        w = elem.outerWidth(true);
-                        h = elem.outerHeight(true);
+                        if (axisName.charAt(0) == 'x') {
+                          w = elem.outerWidth(true);
+                          h = elem.outerHeight(true);
+                        } else {
+                          h = elem.outerWidth(true);
+                          w = elem.outerHeight(true);
+                        }
                         elem.remove();
                     }
 
@@ -119,7 +132,9 @@ Improvements by Mark Cote, December 2010.
                     } else {
                         // HTML text
                         plot.getPlaceholder().find('#' + axisName + 'Label').remove();
-                        var elem = $('<div id="' + axisName + 'Label" " class="axisLabels" style="position:absolute;">' + opts.axisLabel + '</div>');
+                        var elem = $('<div class="axisLabels ' + axisName + 'Label" style="position:absolute;' +
+                                     (axisName.charAt(0) == 'x' ? '' : transforms((axisName == 'y2axis'))) +
+                                     '">' + opts.axisLabel + '</div>');
                         plot.getPlaceholder().append(elem);
                         if (axisName == 'xaxis') {
                             elem.css('left', plot.getPlotOffset().left + plot.width()/2 - elem.outerWidth()/2 + 'px');
@@ -129,10 +144,19 @@ Improvements by Mark Cote, December 2010.
                             elem.css('top', '0px');
                         } else if (axisName == 'yaxis') {
                             elem.css('top', plot.getPlotOffset().top + plot.height()/2 - elem.outerHeight()/2 + 'px');
-                            elem.css('left', '0px');
+                            elem.css('left', '-' + (elem.outerWidth()/2 - elem.outerHeight()/2) + 'px');
                         } else if (axisName == 'y2axis') {
-                            elem.css('top', plot.getPlotOffset().top + plot.height()/2 - elem.outerHeight()/2 + 'px');
-                            elem.css('right', '0px');
+                            var w = elem.outerWidth();
+                            var h = elem.outerHeight();
+                            elem.css('top', (plot.getPlotOffset().top + plot.height()/2 - elem.outerHeight()/2) + 'px');
+                            elem.css('left', (plot.getPlotOffset().left + plot.width() + plot.getPlotOffset().right - w/2 - h/2) + 'px');
+                            // Since we're at the right edge of the plot,
+                            // it seems that a long label will get wrapped
+                            // even though it would fit when rotated.  I guess
+                            // sizes are calculated before transforms are
+                            // applied...?  Regardless, this sets them back.
+                            elem.css('width', w);
+                            elem.css('height', h);
                         }
                     }
                 });

@@ -131,7 +131,6 @@ Improvements by Mark Cote, December 2010.
 
                     } else {
                         // HTML text
-                        plot.getPlaceholder().find('#' + axisName + 'Label').remove();
                         var elem = $('<div class="axisLabels ' + axisName + 'Label" style="position:absolute;' +
                                      (axisName.charAt(0) == 'x' ? '' : transforms((axisName == 'y2axis'))) +
                                      '">' + opts.axisLabel + '</div>');

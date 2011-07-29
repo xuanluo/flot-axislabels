@@ -21,6 +21,28 @@ Improvements by Mark Cote, December 2010.
 (function ($) {
     var options = { };
 
+     function canvasSupported() {
+         return !!document.createElement('canvas').getContext;
+     }
+
+     function canvasTextSupported() {
+         if (!canvasSupported()) {
+             return false;
+         }
+         var dummy_canvas = document.createElement('canvas');
+         var context = dummy_canvas.getContext('2d');
+         return typeof context.fillText == 'function';
+     }
+
+    function css3TransitionSupported() {
+        var div = document.createElement('div');
+        return typeof div.style.MozTransition != 'undefined'    // Gecko
+            || typeof div.style.OTransition != 'undefined'      // Opera
+            || typeof div.style.webkitTransition != 'undefined' // WebKit
+            || typeof div.style.transition != 'undefined';
+    }
+
+
     function AxisLabel(axisName, plot, opts) {
         this.axisName = axisName;
         this.plot = plot;
@@ -28,6 +50,7 @@ Improvements by Mark Cote, December 2010.
         this.width = 0;
         this.height = 0;
     }
+
 
     CanvasAxisLabel.prototype = new AxisLabel();
     CanvasAxisLabel.prototype.constructor = CanvasAxisLabel;
@@ -75,6 +98,9 @@ Improvements by Mark Cote, December 2010.
         ctx.restore();
     };
 
+
+    // TODO: Respect padding when all other renderers.
+
     HtmlAxisLabel.prototype = new AxisLabel();
     HtmlAxisLabel.prototype.constructor = HtmlAxisLabel;
     function HtmlAxisLabel(axisName, plot, opts) {
@@ -108,6 +134,7 @@ Improvements by Mark Cote, December 2010.
         }
     };
 
+
     CssTransformAxisLabel.prototype = new HtmlAxisLabel();
     CssTransformAxisLabel.prototype.constructor = CssTransformAxisLabel;
     function CssTransformAxisLabel(axisName, plot, opts) {
@@ -129,13 +156,14 @@ Improvements by Mark Cote, December 2010.
             '-moz-transform': '',
             '-webkit-transform': '',
             '-o-transform': '',
-            'filter': ''
+            '-ms-transform': ''
         };
         if (x != 0 || y != 0) {
             var stdTranslate = ' translate(' + x + 'px, ' + y + 'px)';
             stransforms['-moz-transform'] += stdTranslate;
             stransforms['-webkit-transform'] += stdTranslate;
             stransforms['-o-transform'] += stdTranslate;
+            stransforms['-ms-transform'] += stdTranslate;
         }
         if (degrees != 0) {
             var rotation = degrees / 90;
@@ -143,7 +171,7 @@ Improvements by Mark Cote, December 2010.
             stransforms['-moz-transform'] += stdRotate;
             stransforms['-webkit-transform'] += stdRotate;
             stransforms['-o-transform'] += stdRotate;
-            stransforms['filter'] += ' progid:DXImageTransform.Microsoft.BasicImage(rotation=' + rotation + ')';
+            stransforms['-ms-transform'] += stdRotate;
         }
         var s = '';
         for (var prop in stransforms) {
@@ -178,6 +206,50 @@ Improvements by Mark Cote, December 2010.
     };
 
 
+    IeTransformAxisLabel.prototype = new CssTransformAxisLabel();
+    IeTransformAxisLabel.prototype.constructor = IeTransformAxisLabel;
+    function IeTransformAxisLabel(axisName, plot, opts) {
+        CssTransformAxisLabel.prototype.constructor.call(this, axisName, plot, opts);
+        this.requiresResize = false;
+    }
+
+    IeTransformAxisLabel.prototype.transforms = function(degrees, x, y) {
+        // I didn't feel like learning the crazy Matrix stuff, so this uses
+        // a combination of the rotation transform and CSS positioning.
+        var s = '';
+        if (x != 0) {
+            s += 'left: ' + x + 'px; ';
+        }
+        if (y != 0) {
+            s += 'top: ' + y + 'px; ';
+        }
+        if (degrees != 0) {
+            var rotation = degrees/90;
+            while (rotation < 0) {
+                rotation += 4;
+            }
+            s += ' filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=' + rotation + ')';
+            // see below
+            this.requiresResize = (this.axisName == 'y2axis');
+        }
+        return s;
+    };
+
+    IeTransformAxisLabel.prototype.draw = function() {
+        CssTransformAxisLabel.prototype.draw.call(this);
+        if (this.requiresResize) {
+            var elem = this.plot.getPlaceholder().find("." + this.axisName + "Label");
+            // Since we used CSS positioning instead of transforms for
+            // translating the element, and since the positioning is done
+            // before any rotations, we have to reset the width and height
+            // in case the browser wrapped the text (specifically for the
+            // y2axis).
+            elem.css('width', this.labelWidth);
+            elem.css('height', this.labelHeight);
+        }
+    };
+
+
     function init(plot) {
         // This is kind of a hack. There are no hooks in Flot between
         // the creation and measuring of the ticks (setTicks, measureTickLabels
@@ -201,14 +273,34 @@ Improvements by Mark Cote, December 2010.
                     if (!opts || !opts.axisLabel)
                         return;
 
-                    if (opts.axisLabelUseCanvas != false)
-                        opts.axisLabelUseCanvas = true;
+                    var renderer = null;
 
-                    if (opts.axisLabelUseCanvas) {
-                        axisLabels[axisName] = new CanvasAxisLabel(axisName, plot, opts);
+                    if (!opts.axisLabelUseHtml && navigator.appName == 'Microsoft Internet Explorer') {
+                        var ua = navigator.userAgent;
+                        var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+                        if (re.exec(ua) != null) {
+                            rv = parseFloat(RegExp.$1);
+                        }
+                        if (rv >= 9 && !opts.axisLabelUseCanvas && !opts.axisLabelUseHtml) {
+                            renderer = CssTransformAxisLabel;
+                        } else if (!opts.axisLabelUseCanvas && !opts.axisLabelUseHtml) {
+                            renderer = IeTransformAxisLabel;
+                        } else if (opts.axisLabelUseCanvas) {
+                            renderer = CanvasAxisLabel;
+                        } else {
+                            renderer = HtmlAxisLabel;
+                        }
                     } else {
-                        axisLabels[axisName] = new CssTransformAxisLabel(axisName, plot, opts);
+                        if (opts.axisLabelUseHtml || (!css3TransitionSupported() && !canvasTextSupported()) && !opts.axisLabelUseCanvas) {
+                            renderer = HtmlAxisLabel;
+                        } else if (opts.axisLabelUseCanvas || !css3TransitionSupported()) {
+                            renderer = CanvasAxisLabel;
+                        } else {
+                            renderer = CssTransformAxisLabel;
+                        }
                     }
+
+                    axisLabels[axisName] = new renderer(axisName, plot, opts);
 
                     var padding = opts.axisLabelPadding === undefined ? defaultPadding : opts.axisLabelPadding;
 

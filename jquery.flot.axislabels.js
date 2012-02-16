@@ -221,8 +221,6 @@ Improvements by Mark Cote.
             degrees = 90;
             xoff = box.left + box.width - this.labelWidth/2 - this.labelHeight/2;
             yoff = box.height/2 + box.top;
-            console.log('xoff ' + xoff);
-            console.log('yoff ' + yoff);
         }
         var elem = $('<div class="axisLabels ' + this.axisName +
                      'Label" style="position:absolute; top: 0; left: 0; ' +

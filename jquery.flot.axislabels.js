@@ -193,7 +193,7 @@ Improvements by Mark Cote.
             stransforms['-o-transform'] += stdRotate;
             stransforms['-ms-transform'] += stdRotate;
         }
-        var s = '';
+        var s = 'top: 0; left: 0; ';
         for (var prop in stransforms) {
             if (stransforms[prop]) {
                 s += prop + ':' + stransforms[prop] + ';';
@@ -202,30 +202,35 @@ Improvements by Mark Cote.
         s += ';';
         return s;
     };
+ 
+    CssTransformAxisLabel.prototype.calculateOffsets = function(box) {
+        var offsets = { x: 0, y: 0, degrees: 0 };
+        if (this.position == 'bottom') {
+            offsets.x = box.left + box.width/2 - this.labelWidth/2;
+            offsets.y = box.top + box.height - this.labelHeight;
+        } else if (this.position == 'top') {
+            offsets.x = box.left + box.width/2 - this.labelWidth/2;
+            offsets.y = box.top;
+        } else if (this.position == 'left') {
+            offsets.degrees = -90;
+            offsets.x = box.left - this.labelWidth/2 + this.labelHeight/2;
+            offsets.y = box.height/2 + box.top;
+        } else if (this.position == 'right') {
+            offsets.degrees = 90;
+            offsets.x = box.left + box.width - this.labelWidth/2
+                        - this.labelHeight/2;
+            offsets.y = box.height/2 + box.top;
+        }
+        return offsets;
+    };
 
     CssTransformAxisLabel.prototype.draw = function(box) {
         this.plot.getPlaceholder().find("." + this.axisName + "Label").remove();
-        var xoff = 0, yoff = 0, degrees = 0;
-
-        if (this.position == 'bottom') {
-            xoff = box.left + box.width/2 - this.labelWidth/2;
-            yoff = box.top + box.height - this.labelHeight;
-        } else if (this.position == 'top') {
-            xoff = box.left + box.width/2 - this.labelWidth/2;
-            yoff = box.top;
-        } else if (this.position == 'left') {
-            degrees = -90;
-            xoff = box.left - this.labelWidth/2 + this.labelHeight/2;
-            yoff = box.height/2 + box.top;
-        } else if (this.position == 'right') {
-            degrees = 90;
-            xoff = box.left + box.width - this.labelWidth/2 - this.labelHeight/2;
-            yoff = box.height/2 + box.top;
-        }
+        var offsets = this.calculateOffsets(box);
         var elem = $('<div class="axisLabels ' + this.axisName +
-                     'Label" style="position:absolute; top: 0; left: 0; ' +
-                     this.transforms(degrees, xoff, yoff) + '">' +
-                     this.opts.axisLabel + '</div>');
+                     'Label" style="position:absolute; ' +
+                     this.transforms(offsets.degrees, offsets.x, offsets.y) +
+                     '">' + this.opts.axisLabel + '</div>');
         this.plot.getPlaceholder().append(elem);
     };
 
@@ -243,26 +248,45 @@ Improvements by Mark Cote.
         // I didn't feel like learning the crazy Matrix stuff, so this uses
         // a combination of the rotation transform and CSS positioning.
         var s = '';
+        if (degrees != 0) {
+            var rotation = degrees/90;
+            while (rotation < 0) {
+                rotation += 4;
+            }
+            s += ' filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=' + rotation + '); ';
+            // see below
+            this.requiresResize = (this.position == 'right');
+        }
         if (x != 0) {
             s += 'left: ' + x + 'px; ';
         }
         if (y != 0) {
             s += 'top: ' + y + 'px; ';
         }
-        if (degrees != 0) {
-            var rotation = degrees/90;
-            while (rotation < 0) {
-                rotation += 4;
-            }
-            s += ' filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=' + rotation + ')';
-            // see below
-            this.requiresResize = (this.axisName == 'y2axis');
-        }
         return s;
     };
 
-    IeTransformAxisLabel.prototype.draw = function() {
-        CssTransformAxisLabel.prototype.draw.call(this);
+    IeTransformAxisLabel.prototype.calculateOffsets = function(box) {
+        var offsets = CssTransformAxisLabel.prototype.calculateOffsets.call(
+                          this, box);
+        // adjust some values to take into account differences between
+        // CSS and IE rotations.
+        if (this.position == 'top') {
+            // FIXME: not sure why, but placing this exactly at the top causes 
+            // the top axis label to flip to the bottom...
+            offsets.y = box.top + 1;
+        } else if (this.position == 'left') {
+            offsets.x = box.left;
+            offsets.y = box.height/2 + box.top - this.labelWidth/2;
+        } else if (this.position == 'right') {
+            offsets.x = box.left + box.width - this.labelHeight;
+            offsets.y = box.height/2 + box.top - this.labelWidth/2;
+        }
+        return offsets;
+    };
+
+    IeTransformAxisLabel.prototype.draw = function(box) {
+        CssTransformAxisLabel.prototype.draw.call(this, box);
         if (this.requiresResize) {
             var elem = this.plot.getPlaceholder().find("." + this.axisName + "Label");
             // Since we used CSS positioning instead of transforms for

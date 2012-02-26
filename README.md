@@ -17,7 +17,7 @@ clockwise for right-hand labels).  In HTML mode, y-axis labels are left
 horizontal (warning: this takes up a lot of space).
 
 In CSS and HTML modes, each axis label belongs to the classes "axisLabels"
-and "[axisName]Label" (e.g. #xaxisLabel, #y2axisLabel, etc).  You can use
+and "[axisName]Label" (e.g. .xaxisLabel, .y2axisLabel, etc).  You can use
 standard CSS properties to customize their appearance.
 
 In canvas mode, you can set font size and family through flot options (see

@@ -59,8 +59,8 @@ are
   axis label (default: 2)
 
 By default, if supported, flot-axislabels uses CSS transforms.  You can force
-either canvas or HTML mode by setting axisLabelForceCanvas or
-axisLabelForceHtml, respectively, to true.
+either canvas or HTML mode by setting axisLabelUseCanvas or
+axisLabelUseHtml, respectively, to true.
 
 Canvas mode supports two other options:
 

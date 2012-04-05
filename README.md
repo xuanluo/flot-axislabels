@@ -80,4 +80,5 @@ seem to work with IE 8, even with excanvas.
 License
 -------
 
-flot-axislabels is released under [GPLv3](http://www.gnu.org/licenses/).
+flot-axislabels is released under the terms of [the MIT License](http://www.opensource.org/licenses/MIT).
+

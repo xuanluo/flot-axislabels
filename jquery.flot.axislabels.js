@@ -331,7 +331,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 $.each(plot.getAxes(), function(axisName, axis) {
                     var opts = axis.options // Flot 0.7
                         || plot.getOptions()[axisName]; // Flot 0.6
-                    if (!opts || !opts.axisLabel)
+                    if (!opts || !opts.axisLabel || !axis.show)
                         return;
 
                     var renderer = null;
@@ -392,7 +392,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 $.each(plot.getAxes(), function(axisName, axis) {
                     var opts = axis.options // Flot 0.7
                         || plot.getOptions()[axisName]; // Flot 0.6
-                    if (!opts || !opts.axisLabel)
+                    if (!opts || !opts.axisLabel || !axis.show)
                         return;
 
                     axisLabels[axisName].draw(axis.box);

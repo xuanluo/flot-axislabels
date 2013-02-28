@@ -8,6 +8,8 @@ Original code was rereleased under the MIT license by Xuan Luo, April 2012.
 
 Improvements by Mark Cote.
 
+axisLabelColour: "string" option added by Michael Haddon.
+
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
 "Software"), to deal in the Software without restriction, including
@@ -89,10 +91,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     };
 
     CanvasAxisLabel.prototype.draw = function(box) {
+        if (!this.opts.axisLabelColour)
+            this.opts.axisLabelColour = 'black';
         var ctx = this.plot.getCanvas().getContext('2d');
         ctx.save();
         ctx.font = this.opts.axisLabelFontSizePixels + 'px ' +
             this.opts.axisLabelFontFamily;
+        ctx.fillStyle = this.opts.axisLabelColour;
         var width = ctx.measureText(this.opts.axisLabel).width;
         var height = this.opts.axisLabelFontSizePixels;
         var x, y, angle = 0;

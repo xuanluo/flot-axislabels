@@ -1,8 +1,7 @@
 flot-axislabels: Axis Labels plugin for flot
 ============================================
 
-Original written by Xuan Luo.
-Maintained by Mark Cote.
+Originally written by Xuan Luo.  Maintained by Mark Cote.
 
 Contributions:
 

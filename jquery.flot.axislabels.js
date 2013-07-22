@@ -24,8 +24,8 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
  */
+
 (function ($) {
     var options = { };
 
@@ -60,6 +60,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         this.width = 0;
         this.height = 0;
     }
+
+    AxisLabel.prototype.delete = function() {
+    };
 
 
     CanvasAxisLabel.prototype = new AxisLabel();
@@ -121,6 +124,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     function HtmlAxisLabel(axisName, position, padding, plot, opts) {
         AxisLabel.prototype.constructor.call(this, axisName, position,
                                              padding, plot, opts);
+        this.elem = null;
     }
 
     HtmlAxisLabel.prototype.calculateSize = function() {
@@ -140,24 +144,36 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
     };
 
+    HtmlAxisLabel.prototype.delete = function() {
+        if (this.elem) {
+            this.elem.remove();
+        }
+    };
+
     HtmlAxisLabel.prototype.draw = function(box) {
         this.plot.getPlaceholder().find('#' + this.axisName + 'Label').remove();
-        var elem = $('<div id="' + this.axisName + 
-                     'Label" " class="axisLabels" style="position:absolute;">'
-                     + this.opts.axisLabel + '</div>');
-        this.plot.getPlaceholder().append(elem);
+        this.elem = $('<div id="' + this.axisName +
+                      'Label" " class="axisLabels" style="position:absolute;">'
+                      + this.opts.axisLabel + '</div>');
+        this.plot.getPlaceholder().append(this.elem);
         if (this.position == 'top') {
-            elem.css('left', box.left + box.width/2 - this.labelWidth/2 + 'px');
-            elem.css('top', box.top + 'px');
+            this.elem.css('left', box.left + box.width/2 - this.labelWidth/2 +
+                          'px');
+            this.elem.css('top', box.top + 'px');
         } else if (this.position == 'bottom') {
-            elem.css('left', box.left + box.width/2 - this.labelWidth/2 + 'px');
-            elem.css('top', box.top + box.height - this.labelHeight + 'px');
+            this.elem.css('left', box.left + box.width/2 - this.labelWidth/2 +
+                          'px');
+            this.elem.css('top', box.top + box.height - this.labelHeight +
+                          'px');
         } else if (this.position == 'left') {
-            elem.css('top', box.top + box.height/2 - this.labelHeight/2 + 'px');
-            elem.css('left', box.left + 'px');
+            this.elem.css('top', box.top + box.height/2 - this.labelHeight/2 +
+                          'px');
+            this.elem.css('left', box.left + 'px');
         } else if (this.position == 'right') {
-            elem.css('top', box.top + box.height/2 - this.labelHeight/2 + 'px');
-            elem.css('left', box.left + box.width - this.labelWidth + 'px');
+            this.elem.css('top', box.top + box.height/2 - this.labelHeight/2 +
+                          'px');
+            this.elem.css('left', box.left + box.width - this.labelWidth +
+                          'px');
         }
     };
 
@@ -210,7 +226,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         s += ';';
         return s;
     };
- 
+
     CssTransformAxisLabel.prototype.calculateOffsets = function(box) {
         var offsets = { x: 0, y: 0, degrees: 0 };
         if (this.position == 'bottom') {
@@ -235,12 +251,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     CssTransformAxisLabel.prototype.draw = function(box) {
         this.plot.getPlaceholder().find("." + this.axisName + "Label").remove();
         var offsets = this.calculateOffsets(box);
-        var elem = $('<div class="axisLabels ' + this.axisName +
-                     'Label" style="position:absolute; ' +
-                     'color: ' + this.opts.color + '; ' +
-                     this.transforms(offsets.degrees, offsets.x, offsets.y) +
-                     '">' + this.opts.axisLabel + '</div>');
-        this.plot.getPlaceholder().append(elem);
+        this.elem = $('<div class="axisLabels ' + this.axisName +
+                      'Label" style="position:absolute; ' +
+                      'color: ' + this.opts.color + '; ' +
+                      this.transforms(offsets.degrees, offsets.x, offsets.y) +
+                      '">' + this.opts.axisLabel + '</div>');
+        this.plot.getPlaceholder().append(this.elem);
     };
 
 
@@ -297,14 +313,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     IeTransformAxisLabel.prototype.draw = function(box) {
         CssTransformAxisLabel.prototype.draw.call(this, box);
         if (this.requiresResize) {
-            var elem = this.plot.getPlaceholder().find("." + this.axisName + "Label");
+            this.elem = this.plot.getPlaceholder().find("." + this.axisName +
+                                                        "Label");
             // Since we used CSS positioning instead of transforms for
             // translating the element, and since the positioning is done
             // before any rotations, we have to reset the width and height
             // in case the browser wrapped the text (specifically for the
             // y2axis).
-            elem.css('width', this.labelWidth);
-            elem.css('height', this.labelHeight);
+            this.elem.css('width', this.labelWidth);
+            this.elem.css('height', this.labelHeight);
         }
     };
 
@@ -331,6 +348,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 $.each(plot.getAxes(), function(axisName, axis) {
                     var opts = axis.options // Flot 0.7
                         || plot.getOptions()[axisName]; // Flot 0.6
+
+                    // Handle redraws initiated outside of this plug-in.
+                    if (axisName in axisLabels) {
+                        axis.labelHeight = axis.labelHeight -
+                            axisLabels[axisName].height;
+                        axis.labelWidth = axis.labelWidth -
+                            axisLabels[axisName].width;
+                        opts.labelHeight = axis.labelHeight;
+                        opts.labelWidth = axis.labelWidth;
+                        axisLabels[axisName].delete();
+                        delete axisLabels[axisName];
+                    }
+
                     if (!opts || !opts.axisLabel || !axis.show)
                         return;
 
@@ -379,18 +409,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
                     // AxisLabel.height and .width are the size of the
                     // axis label and padding.
-                    axis.labelHeight += axisLabels[axisName].height;
-                    axis.labelWidth += axisLabels[axisName].width;
-                    opts.labelHeight = axis.labelHeight;
-                    opts.labelWidth = axis.labelWidth;
+                    // Just set opts here because axis will be sorted out on
+                    // the redraw.
+
+                    opts.labelHeigh = axis.labelHeight +
+                        axisLabels[axisName].height;
+                    opts.labelWidth = axis.labelWidth +
+                        axisLabels[axisName].width;
                 });
-                // if there are axis labels re-draw with new label widths and heights
+
+                // If there are axis labels, re-draw with new label widths and
+                // heights.
+
                 if (hasAxisLabels) {
                     secondPass = true;
                     plot.setupGrid();
                     plot.draw();
                 }
             } else {
+                secondPass = false;
                 // DRAW
                 $.each(plot.getAxes(), function(axisName, axis) {
                     var opts = axis.options // Flot 0.7

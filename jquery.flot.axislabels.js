@@ -6,14 +6,6 @@ Original code is Copyright (c) 2010 Xuan Luo.
 Original code was released under the GPLv3 license by Xuan Luo, September 2010.
 Original code was rereleased under the MIT license by Xuan Luo, April 2012.
 
-Maintained by Mark Cote.
-
-Improvements by
-
-  Mark Cote
-  github user stdexcept
-  Clemens Stolle
-
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
 "Software"), to deal in the Software without restriction, including

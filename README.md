@@ -1,8 +1,15 @@
 flot-axislabels: Axis Labels plugin for flot
 ============================================
 
-* Original author: Xuan Luo
-* Contributions: Mark Cote
+Original written by Xuan Luo.
+Maintained by Mark Cote.
+
+Contributions:
+
+* Xuan Luo
+* Mark Cote
+* stdexcept
+* Clemens Stolle
 
 [flot-axislabels](https://github.com/markrcote/flot-axislabels) provides 
 flot with the ability to label axes.  It supports any number of axes.   It

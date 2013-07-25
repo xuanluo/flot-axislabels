@@ -412,7 +412,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                     // Just set opts here because axis will be sorted out on
                     // the redraw.
 
-                    opts.labelHeigh = axis.labelHeight +
+                    opts.labelHeight = axis.labelHeight +
                         axisLabels[axisName].height;
                     opts.labelWidth = axis.labelWidth +
                         axisLabels[axisName].width;

@@ -9,8 +9,9 @@ Contributions:
 * Mark Cote
 * stdexcept
 * Clemens Stolle
+* Michael Haddon
 
-[flot-axislabels](https://github.com/markrcote/flot-axislabels) provides 
+[flot-axislabels](https://github.com/markrcote/flot-axislabels) provides
 flot with the ability to label axes.  It supports any number of axes.   It
 can render the labels with CSS transforms, in canvas, or with traditional
 CSS positioning ("HTML" mode).  flot-axislabels attempts a graceful fallback
@@ -26,8 +27,8 @@ In CSS and HTML modes, each axis label belongs to the classes "axisLabels"
 and "[axisName]Label" (e.g. .xaxisLabel, .y2axisLabel, etc).  You can use
 standard CSS properties to customize their appearance.
 
-In canvas mode, you can set font size and family through flot options (see
-below).
+In canvas mode, you can set font size, family, and colour through flot
+options (see below).
 
 
 Example
@@ -73,6 +74,7 @@ Canvas mode supports two other options:
 * axisLabelFontSizePixels (int): the size, in pixels, of the font (default: 14)
 * axisLabelFontFamily (string): the font family of the font (default:
   sans-serif)
+* axisLabelColour (string): the font colour (default: black)
 
 
 Compatibility

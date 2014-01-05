@@ -90,10 +90,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     };
 
     CanvasAxisLabel.prototype.draw = function(box) {
+        if (!this.opts.axisLabelColour)
+            this.opts.axisLabelColour = 'black';
         var ctx = this.plot.getCanvas().getContext('2d');
         ctx.save();
         ctx.font = this.opts.axisLabelFontSizePixels + 'px ' +
             this.opts.axisLabelFontFamily;
+        ctx.fillStyle = this.opts.axisLabelColour;
         var width = ctx.measureText(this.opts.axisLabel).width;
         var height = this.opts.axisLabelFontSizePixels;
         var x, y, angle = 0;

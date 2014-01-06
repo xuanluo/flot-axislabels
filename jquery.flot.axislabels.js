@@ -449,6 +449,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         init: init,
         options: options,
         name: 'axisLabels',
-        version: '2.0b0'
+        version: '2.0'
     });
 })(jQuery);

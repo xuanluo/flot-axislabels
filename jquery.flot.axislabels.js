@@ -61,7 +61,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         this.height = 0;
     }
 
-    AxisLabel.prototype.delete = function() {
+    AxisLabel.prototype.cleanup = function() {
     };
 
 
@@ -147,7 +147,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
     };
 
-    HtmlAxisLabel.prototype.delete = function() {
+    HtmlAxisLabel.prototype.cleanup = function() {
         if (this.elem) {
             this.elem.remove();
         }
@@ -360,7 +360,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                             axisLabels[axisName].width;
                         opts.labelHeight = axis.labelHeight;
                         opts.labelWidth = axis.labelWidth;
-                        axisLabels[axisName].delete();
+                        axisLabels[axisName].cleanup();
                         delete axisLabels[axisName];
                     }
 

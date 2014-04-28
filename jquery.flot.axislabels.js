@@ -256,7 +256,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         var offsets = this.calculateOffsets(box);
         this.elem = $('<div class="axisLabels ' + this.axisName +
                       'Label" style="position:absolute; ' +
-                      'color: ' + this.opts.color + '; ' +
+                      (this.opts.axisLabelColour ? 'color: ' + this.opts.axisLabelColour + '; ' : '') +
                       this.transforms(offsets.degrees, offsets.x, offsets.y) +
                       '">' + this.opts.axisLabel + '</div>');
         this.plot.getPlaceholder().append(this.elem);

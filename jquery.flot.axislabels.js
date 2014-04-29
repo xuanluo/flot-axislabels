@@ -409,7 +409,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                                       defaultPadding : opts.axisLabelPadding;
 
                         axisLabels[axisName] = new renderer(axisName,
-                                                        axis.position, padding,
+                                                            axis.position, padding,
                                                             plot, opts);
 
                         // flot interprets axis.labelHeight and .labelWidth as

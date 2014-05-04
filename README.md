@@ -10,6 +10,8 @@ Contributions:
 * stdexcept
 * Clemens Stolle
 * Michael Haddon
+* andig
+* Alex Pinkney
 
 [flot-axislabels](https://github.com/markrcote/flot-axislabels) provides
 flot with the ability to label axes.  It supports any number of axes.   It
@@ -36,6 +38,9 @@ Example
 
     $(function () {
         var options = {
+            axisLabels: {
+                show: true
+            },
             xaxes: [{
                 axisLabel: 'foo',
             }],
@@ -58,7 +63,12 @@ Example
 Usage
 -----
 
-flot-axislabel adds several options to the axis objects.  The two main ones
+flot-axislabel adds an axisLabels object to the global options object.
+It supports one option:
+
+* show (bool): display all axis labels (default: true)
+
+There are also several options added to the axis objects.  The two main ones
 are
 
 * axisLabel (string): the text you want displayed as the label
@@ -69,7 +79,7 @@ By default, if supported, flot-axislabels uses CSS transforms.  You can force
 either canvas or HTML mode by setting axisLabelUseCanvas or axisLabelUseHtml,
 respectively, to true.
 
-Canvas mode supports two other options:
+Canvas mode supports several other options:
 
 * axisLabelFontSizePixels (int): the size, in pixels, of the font (default: 14)
 * axisLabelFontFamily (string): the font family of the font (default:

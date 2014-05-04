@@ -27,7 +27,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 (function ($) {
-    var options = { };
+    var options = {
+      axisLabels: {
+        show: true
+      }
+    };
 
     function canvasSupported() {
         return !!document.createElement('canvas').getContext;
@@ -300,7 +304,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // adjust some values to take into account differences between
         // CSS and IE rotations.
         if (this.position == 'top') {
-            // FIXME: not sure why, but placing this exactly at the top causes 
+            // FIXME: not sure why, but placing this exactly at the top causes
             // the top axis label to flip to the bottom...
             offsets.y = box.top + 1;
         } else if (this.position == 'left') {
@@ -330,117 +334,123 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
     function init(plot) {
-        // This is kind of a hack. There are no hooks in Flot between
-        // the creation and measuring of the ticks (setTicks, measureTickLabels
-        // in setupGrid() ) and the drawing of the ticks and plot box
-        // (insertAxisLabels in setupGrid() ).
-        //
-        // Therefore, we use a trick where we run the draw routine twice:
-        // the first time to get the tick measurements, so that we can change
-        // them, and then have it draw it again.
-        var secondPass = false;
+        plot.hooks.processOptions.push(function (plot, options) {
 
-        var axisLabels = {};
-        var axisOffsetCounts = { left: 0, right: 0, top: 0, bottom: 0 };
+            if (!options.axisLabels.show)
+                return;
 
-        var defaultPadding = 2;  // padding between axis and tick labels
-        plot.hooks.draw.push(function (plot, ctx) {
-            var hasAxisLabels = false;
-            if (!secondPass) {
-                // MEASURE AND SET OPTIONS
-                $.each(plot.getAxes(), function(axisName, axis) {
-                    var opts = axis.options // Flot 0.7
-                        || plot.getOptions()[axisName]; // Flot 0.6
+            // This is kind of a hack. There are no hooks in Flot between
+            // the creation and measuring of the ticks (setTicks, measureTickLabels
+            // in setupGrid() ) and the drawing of the ticks and plot box
+            // (insertAxisLabels in setupGrid() ).
+            //
+            // Therefore, we use a trick where we run the draw routine twice:
+            // the first time to get the tick measurements, so that we can change
+            // them, and then have it draw it again.
+            var secondPass = false;
 
-                    // Handle redraws initiated outside of this plug-in.
-                    if (axisName in axisLabels) {
-                        axis.labelHeight = axis.labelHeight -
+            var axisLabels = {};
+            var axisOffsetCounts = { left: 0, right: 0, top: 0, bottom: 0 };
+
+            var defaultPadding = 2;  // padding between axis and tick labels
+            plot.hooks.draw.push(function (plot, ctx) {
+                var hasAxisLabels = false;
+                if (!secondPass) {
+                    // MEASURE AND SET OPTIONS
+                    $.each(plot.getAxes(), function(axisName, axis) {
+                        var opts = axis.options // Flot 0.7
+                            || plot.getOptions()[axisName]; // Flot 0.6
+
+                        // Handle redraws initiated outside of this plug-in.
+                        if (axisName in axisLabels) {
+                            axis.labelHeight = axis.labelHeight -
+                                axisLabels[axisName].height;
+                            axis.labelWidth = axis.labelWidth -
+                                axisLabels[axisName].width;
+                            opts.labelHeight = axis.labelHeight;
+                            opts.labelWidth = axis.labelWidth;
+                            axisLabels[axisName].cleanup();
+                            delete axisLabels[axisName];
+                        }
+
+                        if (!opts || !opts.axisLabel || !axis.show)
+                            return;
+
+                        hasAxisLabels = true;
+                        var renderer = null;
+
+                        if (!opts.axisLabelUseHtml &&
+                            navigator.appName == 'Microsoft Internet Explorer') {
+                            var ua = navigator.userAgent;
+                            var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+                            if (re.exec(ua) != null) {
+                                rv = parseFloat(RegExp.$1);
+                            }
+                            if (rv >= 9 && !opts.axisLabelUseCanvas && !opts.axisLabelUseHtml) {
+                                renderer = CssTransformAxisLabel;
+                            } else if (!opts.axisLabelUseCanvas && !opts.axisLabelUseHtml) {
+                                renderer = IeTransformAxisLabel;
+                            } else if (opts.axisLabelUseCanvas) {
+                                renderer = CanvasAxisLabel;
+                            } else {
+                                renderer = HtmlAxisLabel;
+                            }
+                        } else {
+                            if (opts.axisLabelUseHtml || (!css3TransitionSupported() && !canvasTextSupported()) && !opts.axisLabelUseCanvas) {
+                                renderer = HtmlAxisLabel;
+                            } else if (opts.axisLabelUseCanvas || !css3TransitionSupported()) {
+                                renderer = CanvasAxisLabel;
+                            } else {
+                                renderer = CssTransformAxisLabel;
+                            }
+                        }
+
+                        var padding = opts.axisLabelPadding === undefined ?
+                                      defaultPadding : opts.axisLabelPadding;
+
+                        axisLabels[axisName] = new renderer(axisName,
+                                                            axis.position, padding,
+                                                            plot, opts);
+
+                        // flot interprets axis.labelHeight and .labelWidth as
+                        // the height and width of the tick labels. We increase
+                        // these values to make room for the axis label and
+                        // padding.
+
+                        axisLabels[axisName].calculateSize();
+
+                        // AxisLabel.height and .width are the size of the
+                        // axis label and padding.
+                        // Just set opts here because axis will be sorted out on
+                        // the redraw.
+
+                        opts.labelHeight = axis.labelHeight +
                             axisLabels[axisName].height;
-                        axis.labelWidth = axis.labelWidth -
+                        opts.labelWidth = axis.labelWidth +
                             axisLabels[axisName].width;
-                        opts.labelHeight = axis.labelHeight;
-                        opts.labelWidth = axis.labelWidth;
-                        axisLabels[axisName].cleanup();
-                        delete axisLabels[axisName];
+                    });
+
+                    // If there are axis labels, re-draw with new label widths and
+                    // heights.
+
+                    if (hasAxisLabels) {
+                        secondPass = true;
+                        plot.setupGrid();
+                        plot.draw();
                     }
+                } else {
+                    secondPass = false;
+                    // DRAW
+                    $.each(plot.getAxes(), function(axisName, axis) {
+                        var opts = axis.options // Flot 0.7
+                            || plot.getOptions()[axisName]; // Flot 0.6
+                        if (!opts || !opts.axisLabel || !axis.show)
+                            return;
 
-                    if (!opts || !opts.axisLabel || !axis.show)
-                        return;
-
-                    hasAxisLabels = true;
-                    var renderer = null;
-
-                    if (!opts.axisLabelUseHtml &&
-                        navigator.appName == 'Microsoft Internet Explorer') {
-                        var ua = navigator.userAgent;
-                        var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
-                        if (re.exec(ua) != null) {
-                            rv = parseFloat(RegExp.$1);
-                        }
-                        if (rv >= 9 && !opts.axisLabelUseCanvas && !opts.axisLabelUseHtml) {
-                            renderer = CssTransformAxisLabel;
-                        } else if (!opts.axisLabelUseCanvas && !opts.axisLabelUseHtml) {
-                            renderer = IeTransformAxisLabel;
-                        } else if (opts.axisLabelUseCanvas) {
-                            renderer = CanvasAxisLabel;
-                        } else {
-                            renderer = HtmlAxisLabel;
-                        }
-                    } else {
-                        if (opts.axisLabelUseHtml || (!css3TransitionSupported() && !canvasTextSupported()) && !opts.axisLabelUseCanvas) {
-                            renderer = HtmlAxisLabel;
-                        } else if (opts.axisLabelUseCanvas || !css3TransitionSupported()) {
-                            renderer = CanvasAxisLabel;
-                        } else {
-                            renderer = CssTransformAxisLabel;
-                        }
-                    }
-
-                    var padding = opts.axisLabelPadding === undefined ?
-                                  defaultPadding : opts.axisLabelPadding;
-
-                    axisLabels[axisName] = new renderer(axisName,
-                                                        axis.position, padding,
-                                                        plot, opts);
-
-                    // flot interprets axis.labelHeight and .labelWidth as
-                    // the height and width of the tick labels. We increase
-                    // these values to make room for the axis label and
-                    // padding.
-
-                    axisLabels[axisName].calculateSize();
-
-                    // AxisLabel.height and .width are the size of the
-                    // axis label and padding.
-                    // Just set opts here because axis will be sorted out on
-                    // the redraw.
-
-                    opts.labelHeight = axis.labelHeight +
-                        axisLabels[axisName].height;
-                    opts.labelWidth = axis.labelWidth +
-                        axisLabels[axisName].width;
-                });
-
-                // If there are axis labels, re-draw with new label widths and
-                // heights.
-
-                if (hasAxisLabels) {
-                    secondPass = true;
-                    plot.setupGrid();
-                    plot.draw();
+                        axisLabels[axisName].draw(axis.box);
+                    });
                 }
-            } else {
-                secondPass = false;
-                // DRAW
-                $.each(plot.getAxes(), function(axisName, axis) {
-                    var opts = axis.options // Flot 0.7
-                        || plot.getOptions()[axisName]; // Flot 0.6
-                    if (!opts || !opts.axisLabel || !axis.show)
-                        return;
-
-                    axisLabels[axisName].draw(axis.box);
-                });
-            }
+            });
         });
     }
 

@@ -53,11 +53,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                         if (!opts.axisLabelFontSizePixels)
                             opts.axisLabelFontSizePixels = 14;
                         if (!opts.axisLabelFontFamily)
-                            opts.axisLabelFontFamily = 'sans-serif';
+                            opts.axisLabelFontFamily = 'Arial';
                         // since we currently always display x as horiz.
                         // and y as vertical, we only care about the height
                         w = opts.axisLabelFontSizePixels;
-                        h = opts.axisLabelFontSizePixels;
+                        h = opts.axisLabelFontSizePixels + 5;
 
                     } else {
                         // HTML text
@@ -71,7 +71,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                     if (axisName.charAt(0) == 'x')
                         axis.labelHeight += h;
                     else
-                        axis.labelWidth += w;
+                        axis.labelWidth += h + 5;
                     opts.labelHeight = axis.labelHeight;
                     opts.labelWidth = axis.labelWidth;
                 });
@@ -103,7 +103,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                             y = plot.getCanvas().height;
                         } else {
                             x = height * 0.72;
-                            y = plot.getPlotOffset().top + plot.height()/2 - width/2;
+                            y = plot.getPlotOffset().top + plot.height()/2 + width/2;
                         }
                         ctx.translate(x, y);
                         ctx.rotate((axisName.charAt(0) == 'x') ? 0 : -Math.PI/2);
@@ -114,14 +114,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                         // HTML text
                         plot.getPlaceholder().find('#' + axisName + 'Label').remove();
                         var elem = $('<div id="' + axisName + 'Label" " class="axisLabels" style="position:absolute;">' + opts.axisLabel + '</div>');
+                        plot.getPlaceholder().append(elem);
                         if (axisName.charAt(0) == 'x') {
                             elem.css('left', plot.getPlotOffset().left + plot.width()/2 - elem.outerWidth()/2 + 'px');
                             elem.css('bottom', '0px');
                         } else {
                             elem.css('top', plot.getPlotOffset().top + plot.height()/2 - elem.outerHeight()/2 + 'px');
-                            elem.css('left', '0px');
+                            elem.css('left', - elem.outerWidth()/2 + 'px');
+                            elem.css('transform', 'rotate(-90deg)'); // if support CSS3
                         }
-                        plot.getPlaceholder().append(elem);
+                        
                     }
                 });
                 secondPass = false;
